@@ -80,17 +80,23 @@ def log_action(
 
 
 def query_log(
-    date: str,
+    date: Optional[str] = None,
     account: Optional[str] = None,
     action_type: Optional[str] = None,
     limit: int = 100,
 ) -> list[dict]:
+    import datetime
+    import pytz
+    if date is None:
+        ist = pytz.timezone("Asia/Kolkata")
+        date = datetime.datetime.now(ist).strftime("%Y-%m-%d")
+
     conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     sql = "SELECT * FROM action_log WHERE timestamp LIKE ?"
-    params = [f"{date}%"]
+    params: list = [f"{date}%"]
 
     if account:
         sql += " AND account = ?"

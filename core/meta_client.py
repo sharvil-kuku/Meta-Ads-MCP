@@ -125,6 +125,27 @@ class MetaClient:
 
         return results
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential_jitter(initial=2, max=30, jitter=0.5),
+        retry=retry_if_exception_type(TransientMetaError),
+        reraise=True,
+    )
+    async def write(self, path: str, fields: dict) -> dict:
+        """Update a Meta object (budget change, status change).
+        Sends POST with params as query string — Meta Graph API write pattern."""
+        client = await self.get_client()
+        params = {"access_token": settings.meta_access_token, **fields}
+        url = f"{self.base_url}/{path}"
+        log.info("meta_api_write", path=path, fields=list(fields.keys()))
+        try:
+            resp = await client.post(url, params=params)
+        except TransientMetaError:
+            raise
+        except Exception as e:
+            raise TransientMetaError(str(e))
+        return self._parse_response(resp)
+
     async def post_batch(self, batch: list[dict]) -> list[dict]:
         chunk_size = settings.batch_size
         all_results = []
