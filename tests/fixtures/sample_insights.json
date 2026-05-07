@@ -1,0 +1,44 @@
+[
+  {
+    "id": "23851234567890",
+    "name": "Shashank - App Install - ABO - D2",
+    "account": "TestAccount",
+    "account_id": "act_987654321",
+    "level": "adset",
+    "status": "ACTIVE",
+    "budget": 2000,
+    "type": "App",
+    "start_time": "2026-05-05T00:00:00+0000",
+    "today":     {"spend": 1200.0, "results": 10.0, "installs": 12.0, "cac": 120, "cpi": 100},
+    "yesterday": {"spend": 1100.0, "results": 9.0,  "installs": 11.0, "cac": 122, "cpi": 100},
+    "day_before": {"spend": 1000.0, "results": 8.0, "installs": 10.0, "cac": 125, "cpi": 100}
+  },
+  {
+    "id": "23851234567891",
+    "name": "Shashank - App Install - AAA - D3+",
+    "account": "TestAccount",
+    "account_id": "act_987654321",
+    "level": "adset",
+    "status": "ACTIVE",
+    "budget": 5000,
+    "type": "App",
+    "start_time": "2026-04-01T00:00:00+0000",
+    "today":     {"spend": 4200.0, "results": 22.0, "installs": 25.0, "cac": 191, "cpi": 168},
+    "yesterday": {"spend": 4100.0, "results": 21.0, "installs": 24.0, "cac": 195, "cpi": 171},
+    "day_before": {"spend": 3900.0, "results": 18.0, "installs": 20.0, "cac": 217, "cpi": 195}
+  },
+  {
+    "id": "23851234567892",
+    "name": "Shashank - Web Purchase - CBO",
+    "account": "TestAccount2",
+    "account_id": "act_111111111",
+    "level": "campaign",
+    "status": "ACTIVE",
+    "budget": 8000,
+    "type": "Web",
+    "start_time": "2026-04-15T00:00:00+0000",
+    "today":     {"spend": 7500.0, "results": 30.0, "installs": 0.0, "cac": 250, "cpi": null},
+    "yesterday": {"spend": 7200.0, "results": 28.0, "installs": 0.0, "cac": 257, "cpi": null},
+    "day_before": {"spend": 7000.0, "results": 26.0, "installs": 0.0, "cac": 269, "cpi": null}
+  }
+]

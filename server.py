@@ -1,8 +1,19 @@
 from contextlib import asynccontextmanager
 
+import structlog
 from fastmcp import FastMCP
 
 from persistence.action_log import init_db
+
+structlog.configure(
+    processors=[
+        structlog.stdlib.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.dev.ConsoleRenderer(),
+    ],
+    logger_factory=structlog.PrintLoggerFactory(),
+)
 from tools.account_tools import account_tools
 from tools.data_tools import data_tools
 from tools.optimiser_tools import optimiser_tools
