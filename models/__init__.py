@@ -1,12 +1,65 @@
-from .inputs import CheckTokenInput, ListAdAccountsInput
-from .outputs import CheckTokenOutput, ListAdAccountsOutput, AdAccountOutput
+from .inputs import (
+    CheckTokenInput,
+    ListAdAccountsInput,
+    GetDashboardSnapshotInput,
+    GetInsightsInput,
+    RunOptimiserInput,
+    ExplainDecisionInput,
+    SimulateBudgetChangeInput,
+    ApplyBudgetChangeInput,
+    PauseObjectInput,
+    BulkChange,
+    BulkApplyChangesInput,
+    GetAlertsInput,
+    GetReportSnapshotInput,
+    GetDriftAnalysisInput,
+    GetActionLogInput,
+)
+from .outputs import (
+    CheckTokenOutput,
+    AdAccountOutput,
+    ListAdAccountsOutput,
+    DayInsights,
+    DashboardRow,
+    DashboardSnapshotOutput,
+    InsightsOutput,
+    OptimiserRecommendation,
+    RunOptimiserOutput,
+    DecisionStep,
+    ExplainDecisionOutput,
+    SimulateBudgetChangeOutput,
+    ApplyBudgetChangeOutput,
+    PauseObjectOutput,
+    BulkChangeResult,
+    BulkApplyChangesOutput,
+    AlertItem,
+    GetAlertsOutput,
+    AccountSummary,
+    GetReportSnapshotOutput,
+    DriftItem,
+    GetDriftAnalysisOutput,
+    ActionLogEntry,
+    GetActionLogOutput,
+)
 from .meta import MetaError
 
 __all__ = [
-    "CheckTokenInput",
-    "ListAdAccountsInput",
-    "CheckTokenOutput",
-    "ListAdAccountsOutput",
-    "AdAccountOutput",
+    # inputs
+    "CheckTokenInput", "ListAdAccountsInput",
+    "GetDashboardSnapshotInput", "GetInsightsInput",
+    "RunOptimiserInput", "ExplainDecisionInput", "SimulateBudgetChangeInput",
+    "ApplyBudgetChangeInput", "PauseObjectInput", "BulkChange", "BulkApplyChangesInput",
+    "GetAlertsInput", "GetReportSnapshotInput", "GetDriftAnalysisInput", "GetActionLogInput",
+    # outputs
+    "CheckTokenOutput", "AdAccountOutput", "ListAdAccountsOutput",
+    "DayInsights", "DashboardRow", "DashboardSnapshotOutput", "InsightsOutput",
+    "OptimiserRecommendation", "RunOptimiserOutput",
+    "DecisionStep", "ExplainDecisionOutput", "SimulateBudgetChangeOutput",
+    "ApplyBudgetChangeOutput", "PauseObjectOutput", "BulkChangeResult", "BulkApplyChangesOutput",
+    "AlertItem", "GetAlertsOutput",
+    "AccountSummary", "GetReportSnapshotOutput",
+    "DriftItem", "GetDriftAnalysisOutput",
+    "ActionLogEntry", "GetActionLogOutput",
+    # meta
     "MetaError",
 ]
