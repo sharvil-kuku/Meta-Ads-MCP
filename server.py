@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import sys
 
 import structlog
 from fastmcp import FastMCP
@@ -12,7 +13,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.dev.ConsoleRenderer(),
     ],
-    logger_factory=structlog.PrintLoggerFactory(),
+    logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
 )
 from tools.account_tools import account_tools
 from tools.data_tools import data_tools
