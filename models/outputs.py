@@ -215,3 +215,82 @@ class ActionLogEntry(BaseModel):
 class GetActionLogOutput(BaseModel):
     entries: list[ActionLogEntry]
     count: int
+
+
+# ── Campaign tools ───────────────────────────────────────────────────────────────
+
+class CampaignOutput(BaseModel):
+    id: str
+    name: str
+    status: str
+    objective: str
+    daily_budget: int | None = None
+    created_time: str | None = None
+
+
+class CreateCampaignOutput(BaseModel):
+    success: bool
+    campaign_id: str | None = None
+    error: str | None = None
+
+
+class GetCampaignOutput(BaseModel):
+    campaign: CampaignOutput | None = None
+    error: str | None = None
+
+
+class ListCampaignsOutput(BaseModel):
+    campaigns: list[CampaignOutput]
+    count: int
+
+
+class UpdateCampaignOutput(BaseModel):
+    success: bool
+    campaign_id: str
+    error: str | None = None
+
+
+class DeleteCampaignOutput(BaseModel):
+    success: bool
+    campaign_id: str
+    error: str | None = None
+
+
+# ── AdSet tools ────────────────────────────────────────────────────────────────
+
+class AdSetOutput(BaseModel):
+    id: str
+    name: str
+    status: str
+    campaign_id: str
+    daily_budget: int | None = None
+    bid_amount: int | None = None
+    targeting: dict | None = None
+
+
+class CreateAdSetOutput(BaseModel):
+    success: bool
+    adset_id: str | None = None
+    error: str | None = None
+
+
+class GetAdSetOutput(BaseModel):
+    adset: AdSetOutput | None = None
+    error: str | None = None
+
+
+class ListAdSetsOutput(BaseModel):
+    adsets: list[AdSetOutput]
+    count: int
+
+
+class UpdateAdSetOutput(BaseModel):
+    success: bool
+    adset_id: str
+    error: str | None = None
+
+
+class DeleteAdSetOutput(BaseModel):
+    success: bool
+    adset_id: str
+    error: str | None = None

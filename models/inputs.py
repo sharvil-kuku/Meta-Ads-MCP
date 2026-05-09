@@ -107,3 +107,72 @@ class GetActionLogInput(BaseModel):
     account: str | None = None
     action_type: str | None = None
     limit: int = 50
+
+
+# ── Campaign tools ───────────────────────────────────────────────────────────────
+
+class CreateCampaignInput(BaseModel):
+    account_id: str
+    name: str
+    objective: str = "OUTCOME_TRAFFIC"  # OUTCOME_TRAFFIC, OUTCOME_CONVERSIONS, OUTCOME_REACH, etc.
+    status: str = "PAUSED"               # PAUSED, ACTIVE
+    daily_budget: int | None = None
+    special_ad_categories: list[str] = []
+
+
+class GetCampaignInput(BaseModel):
+    campaign_id: str
+    fields: list[str] = ["id", "name", "status", "objective", "daily_budget", "created_time"]
+
+
+class ListCampaignsInput(BaseModel):
+    account_id: str
+    status_filter: str | None = None  # ACTIVE, PAUSED
+    limit: int = 100
+
+
+class UpdateCampaignInput(BaseModel):
+    campaign_id: str
+    name: str | None = None
+    status: str | None = None
+    daily_budget: int | None = None
+
+
+class DeleteCampaignInput(BaseModel):
+    campaign_id: str
+
+
+# ── AdSet tools ────────────────────────────────────────────────────────────────
+
+class CreateAdSetInput(BaseModel):
+    campaign_id: str
+    name: str
+    daily_budget: int
+    billing_event: str = "IMPRESSIONS"  # IMPRESSIONS, CLICKS, CONVERSIONS
+    optimization_goal: str = "LINK_CLICKS"
+    bid_amount: int | None = None
+    status: str = "PAUSED"
+    targeting: dict | None = None
+
+
+class GetAdSetInput(BaseModel):
+    adset_id: str
+    fields: list[str] = ["id", "name", "status", "daily_budget", "campaign_id", "targeting"]
+
+
+class ListAdSetsInput(BaseModel):
+    campaign_id: str
+    status_filter: str | None = None
+    limit: int = 100
+
+
+class UpdateAdSetInput(BaseModel):
+    adset_id: str
+    name: str | None = None
+    status: str | None = None
+    daily_budget: int | None = None
+    bid_amount: int | None = None
+
+
+class DeleteAdSetInput(BaseModel):
+    adset_id: str

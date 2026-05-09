@@ -16,6 +16,8 @@ structlog.configure(
     logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
 )
 from tools.account_tools import account_tools
+from tools.adset_tools import adset_tools
+from tools.campaign_tools import campaign_tools
 from tools.data_tools import data_tools
 from tools.optimiser_tools import optimiser_tools
 from tools.write_tools import write_tools
@@ -30,12 +32,14 @@ async def db_lifespan(server):
 
 mcp = FastMCP(
     name="meta-ads-mcp",
-    instructions="Meta Ads operations: insights, optimiser, apply changes",
+    instructions="Meta Ads operations: campaign management, adset management, insights, optimiser, apply changes",
     version="1.0.0",
     lifespan=db_lifespan,
 )
 
 mcp.mount(account_tools)
+mcp.mount(adset_tools)
+mcp.mount(campaign_tools)
 mcp.mount(data_tools)
 mcp.mount(optimiser_tools)
 mcp.mount(write_tools)
