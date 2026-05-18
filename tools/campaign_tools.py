@@ -3,13 +3,6 @@ import structlog
 
 from core.meta_client import meta_client
 from core.safety import validate_budget
-from models.inputs import (
-    CreateCampaignInput,
-    GetCampaignInput,
-    ListCampaignsInput,
-    UpdateCampaignInput,
-    DeleteCampaignInput,
-)
 from models.outputs import (
     CampaignOutput,
     CreateCampaignOutput,
@@ -24,30 +17,36 @@ log = structlog.get_logger()
 
 
 @campaign_tools.tool
-async def create_campaign(input: CreateCampaignInput) -> CreateCampaignOutput:
+async def create_campaign(
+    account_id: str,
+    name: str,
+    objective: str = "OUTCOME_TRAFFIC",
+    status: str = "PAUSED",
+    daily_budget: int | None = None,
+    special_ad_categories: list[str] | None = None,
+) -> CreateCampaignOutput:
     """Create a new Meta advertising campaign in the specified ad account."""
-    account_id = input.account_id
     if not account_id.startswith("act_"):
         account_id = f"act_{account_id}"
 
     data = {
-        "name": input.name,
-        "objective": input.objective,
-        "status": input.status,
+        "name": name,
+        "objective": objective,
+        "status": status,
         "special_ad_categories": "[]",
         "is_adset_budget_sharing_enabled": "false",
     }
 
-    if input.daily_budget:
-        ok, err = validate_budget(input.daily_budget)
+    if daily_budget:
+        ok, err = validate_budget(daily_budget)
         if not ok:
             return CreateCampaignOutput(success=False, error=err)
-        data["daily_budget"] = str(input.daily_budget * 100)
+        data["daily_budget"] = str(daily_budget * 100)
 
     try:
         result = await meta_client.post(f"{account_id}/campaigns", data)
         campaign_id = result.get("id")
-        log.info("campaign_created", account_id=account_id, campaign_id=campaign_id, name=input.name)
+        log.info("campaign_created", account_id=account_id, campaign_id=campaign_id, name=name)
         return CreateCampaignOutput(success=True, campaign_id=campaign_id)
     except Exception as e:
         log.error("campaign_creation_failed", account_id=account_id, error=str(e))
@@ -55,56 +54,68 @@ async def create_campaign(input: CreateCampaignInput) -> CreateCampaignOutput:
 
 
 @campaign_tools.tool
-async def get_campaign(input: GetCampaignInput) -> GetCampaignOutput:
+async def get_campaign(
+    campaign_id: str,
+    fields: list[str] | None = None,
+) -> GetCampaignOutput:
     """Get details of a specific campaign by ID."""
+    if fields is None:
+        fields = ["id", "name", "status", "objective", "daily_budget", "created_time"]
     try:
-        fields = ",".join(input.fields)
-        result = await meta_client.get(input.campaign_id, fields=input.fields)
-        
+        result = await meta_client.get(campaign_id, fields=fields)
+
         campaign = CampaignOutput(
             id=result.get("id", ""),
             name=result.get("name", ""),
             status=result.get("status", ""),
             objective=result.get("objective", ""),
-            daily_budget=int(result.get("daily_budget", 0)) // 100 if result.get("daily_budget") else None,
+            daily_budget=int(result.get("daily_budget", 0)) // 100
+            if result.get("daily_budget")
+            else None,
             created_time=result.get("created_time"),
         )
         return GetCampaignOutput(campaign=campaign)
     except Exception as e:
-        log.error("get_campaign_failed", campaign_id=input.campaign_id, error=str(e))
+        log.error("get_campaign_failed", campaign_id=campaign_id, error=str(e))
         return GetCampaignOutput(error=str(e))
 
 
 @campaign_tools.tool
-async def list_campaigns(input: ListCampaignsInput) -> ListCampaignsOutput:
+async def list_campaigns(
+    account_id: str,
+    status_filter: str | None = None,
+    limit: int = 100,
+) -> ListCampaignsOutput:
     """List all campaigns in an ad account with optional status filter."""
-    account_id = input.account_id
     if not account_id.startswith("act_"):
         account_id = f"act_{account_id}"
 
     params = {
         "fields": "id,name,status,objective,daily_budget,created_time",
-        "limit": input.limit,
+        "limit": limit,
     }
 
-    if input.status_filter:
-        status_filter = f'[{{"field":"status","operator":"EQUAL","value":"{input.status_filter}"}}]'
-        params["filtering"] = status_filter
+    if status_filter:
+        params["filtering"] = f'[{{"field":"status","operator":"EQUAL","value":"{status_filter}"}}]'
 
     try:
         campaigns = await meta_client.paginate(f"{account_id}/campaigns", params)
-        
+
         results = []
         for camp in campaigns:
-            results.append(CampaignOutput(
-                id=camp.get("id", ""),
-                name=camp.get("name", ""),
-                status=camp.get("status", ""),
-                objective=camp.get("objective", ""),
-                daily_budget=int(camp.get("daily_budget", 0)) // 100 if camp.get("daily_budget") else None,
-                created_time=camp.get("created_time"),
-            ))
-        
+            results.append(
+                CampaignOutput(
+                    id=camp.get("id", ""),
+                    name=camp.get("name", ""),
+                    status=camp.get("status", ""),
+                    objective=camp.get("objective", ""),
+                    daily_budget=int(camp.get("daily_budget", 0)) // 100
+                    if camp.get("daily_budget")
+                    else None,
+                    created_time=camp.get("created_time"),
+                )
+            )
+
         log.info("campaigns_listed", account_id=account_id, count=len(results))
         return ListCampaignsOutput(campaigns=results, count=len(results))
     except Exception as e:
@@ -113,43 +124,46 @@ async def list_campaigns(input: ListCampaignsInput) -> ListCampaignsOutput:
 
 
 @campaign_tools.tool
-async def update_campaign(input: UpdateCampaignInput) -> UpdateCampaignOutput:
+async def update_campaign(
+    campaign_id: str,
+    name: str | None = None,
+    status: str | None = None,
+    daily_budget: int | None = None,
+) -> UpdateCampaignOutput:
     """Update campaign properties (name, status, budget)."""
     data = {}
-    
-    if input.name:
-        data["name"] = input.name
-    if input.status:
-        data["status"] = input.status
-    if input.daily_budget:
-        ok, err = validate_budget(input.daily_budget)
+
+    if name:
+        data["name"] = name
+    if status:
+        data["status"] = status
+    if daily_budget:
+        ok, err = validate_budget(daily_budget)
         if not ok:
-            return UpdateCampaignOutput(success=False, campaign_id=input.campaign_id, error=err)
-        data["daily_budget"] = str(input.daily_budget * 100)
+            return UpdateCampaignOutput(success=False, campaign_id=campaign_id, error=err)
+        data["daily_budget"] = str(daily_budget * 100)
 
     if not data:
         return UpdateCampaignOutput(
-            success=False, 
-            campaign_id=input.campaign_id, 
-            error="No valid fields to update"
+            success=False, campaign_id=campaign_id, error="No valid fields to update"
         )
 
     try:
-        await meta_client.write(input.campaign_id, data)
-        log.info("campaign_updated", campaign_id=input.campaign_id)
-        return UpdateCampaignOutput(success=True, campaign_id=input.campaign_id)
+        await meta_client.write(campaign_id, data)
+        log.info("campaign_updated", campaign_id=campaign_id)
+        return UpdateCampaignOutput(success=True, campaign_id=campaign_id)
     except Exception as e:
-        log.error("campaign_update_failed", campaign_id=input.campaign_id, error=str(e))
-        return UpdateCampaignOutput(success=False, campaign_id=input.campaign_id, error=str(e))
+        log.error("campaign_update_failed", campaign_id=campaign_id, error=str(e))
+        return UpdateCampaignOutput(success=False, campaign_id=campaign_id, error=str(e))
 
 
 @campaign_tools.tool
-async def delete_campaign(input: DeleteCampaignInput) -> DeleteCampaignOutput:
+async def delete_campaign(campaign_id: str) -> DeleteCampaignOutput:
     """Delete a campaign by setting its status to DELETED."""
     try:
-        await meta_client.write(input.campaign_id, {"status": "DELETED"})
-        log.info("campaign_deleted", campaign_id=input.campaign_id)
-        return DeleteCampaignOutput(success=True, campaign_id=input.campaign_id)
+        await meta_client.write(campaign_id, {"status": "DELETED"})
+        log.info("campaign_deleted", campaign_id=campaign_id)
+        return DeleteCampaignOutput(success=True, campaign_id=campaign_id)
     except Exception as e:
-        log.error("campaign_delete_failed", campaign_id=input.campaign_id, error=str(e))
-        return DeleteCampaignOutput(success=False, campaign_id=input.campaign_id, error=str(e))
+        log.error("campaign_delete_failed", campaign_id=campaign_id, error=str(e))
+        return DeleteCampaignOutput(success=False, campaign_id=campaign_id, error=str(e))

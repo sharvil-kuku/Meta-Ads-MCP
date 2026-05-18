@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 # ── Account tools ──────────────────────────────────────────────────────────────
 
+
 class CheckTokenOutput(BaseModel):
     valid: bool
     user_id: Optional[str] = None
@@ -27,6 +28,7 @@ class ListAdAccountsOutput(BaseModel):
 
 # ── Data tools ─────────────────────────────────────────────────────────────────
 
+
 class DayInsights(BaseModel):
     spend: float = 0
     results: float = 0
@@ -40,10 +42,10 @@ class DashboardRow(BaseModel):
     name: str
     account: str
     account_id: str
-    level: str                    # "campaign" or "adset"
+    level: str  # "campaign" or "adset"
     status: str
     budget: int
-    type: str                     # "App" or "Web"
+    type: str  # "App" or "Web"
     start_time: Optional[str] = None
     today: DayInsights = DayInsights()
     yesterday: DayInsights = DayInsights()
@@ -64,14 +66,15 @@ class InsightsOutput(BaseModel):
 
 # ── Optimiser tools ────────────────────────────────────────────────────────────
 
+
 class OptimiserRecommendation(BaseModel):
     object_id: str
     name: str
     account: str
     level: str
-    structure: str                # "ABO", "AAA", "CBO"
-    day_bucket: str               # "D0", "D1", "D2", "D3+"
-    action: str                   # "SET_BUDGET", "PAUSE", or "" (no action)
+    structure: str  # "ABO", "AAA", "CBO"
+    day_bucket: str  # "D0", "D1", "D2", "D3+"
+    action: str  # "SET_BUDGET", "PAUSE", or "" (no action)
     current_budget: int
     new_budget: Optional[int] = None
     reason: str
@@ -107,6 +110,7 @@ class SimulateBudgetChangeOutput(BaseModel):
 
 # ── Write tools ────────────────────────────────────────────────────────────────
 
+
 class ApplyBudgetChangeOutput(BaseModel):
     success: bool
     object_id: str
@@ -141,12 +145,13 @@ class BulkApplyChangesOutput(BaseModel):
 
 # ── Report tools ───────────────────────────────────────────────────────────────
 
+
 class AlertItem(BaseModel):
     object_id: str
     name: str
     account: str
     level: str
-    alert_type: str               # "HIGH_CAC", "HIGH_BUDGET", or "HIGH_CAC_AND_BUDGET"
+    alert_type: str  # "HIGH_CAC", "HIGH_BUDGET", or "HIGH_CAC_AND_BUDGET"
     cac: Optional[int] = None
     budget: int = 0
     today_spend: float = 0
@@ -185,7 +190,7 @@ class DriftItem(BaseModel):
     name: str
     account: str
     level: str
-    drift: str                    # "IMPROVED", "WORSENED", "HOLDING"
+    drift: str  # "IMPROVED", "WORSENED", "HOLDING"
     prev_cac: Optional[int] = None
     current_cac: Optional[int] = None
     delta_pct: Optional[float] = None
@@ -218,6 +223,7 @@ class GetActionLogOutput(BaseModel):
 
 
 # ── Campaign tools ───────────────────────────────────────────────────────────────
+
 
 class CampaignOutput(BaseModel):
     id: str
@@ -257,6 +263,7 @@ class DeleteCampaignOutput(BaseModel):
 
 
 # ── AdSet tools ────────────────────────────────────────────────────────────────
+
 
 class AdSetOutput(BaseModel):
     id: str

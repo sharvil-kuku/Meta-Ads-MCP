@@ -4,7 +4,6 @@ from fastmcp import FastMCP
 from constants import ALERT_BUDGET_THRESHOLD, ALERT_CAC_THRESHOLD
 from core.insights import fetch_dashboard
 from core.report import summarize_accounts
-from models.inputs import GetActionLogInput, GetAlertsInput, GetDriftAnalysisInput, GetReportSnapshotInput
 from models.outputs import (
     AccountSummary,
     ActionLogEntry,
@@ -23,9 +22,9 @@ log = structlog.get_logger()
 
 
 @report_tools.tool
-async def get_alerts(input: GetAlertsInput) -> GetAlertsOutput:
+async def get_alerts(account_ids: list[str] | None = None) -> GetAlertsOutput:
     """Return active rows where CAC or budget exceeds alert thresholds."""
-    rows = await fetch_dashboard(account_ids=input.account_ids)
+    rows = await fetch_dashboard(account_ids=account_ids)
     alerts: list[AlertItem] = []
 
     for row in rows:
@@ -46,25 +45,27 @@ async def get_alerts(input: GetAlertsInput) -> GetAlertsOutput:
         else:
             alert_type = "HIGH_BUDGET"
 
-        alerts.append(AlertItem(
-            object_id=row["id"],
-            name=row["name"],
-            account=row["account"],
-            level=row["level"],
-            alert_type=alert_type,
-            cac=cac,
-            budget=budget,
-            today_spend=float(today.get("spend", 0)),
-        ))
+        alerts.append(
+            AlertItem(
+                object_id=row["id"],
+                name=row["name"],
+                account=row["account"],
+                level=row["level"],
+                alert_type=alert_type,
+                cac=cac,
+                budget=budget,
+                today_spend=float(today.get("spend", 0)),
+            )
+        )
 
     log.info("alerts_fetched", count=len(alerts))
     return GetAlertsOutput(alerts=alerts, count=len(alerts))
 
 
 @report_tools.tool
-async def get_report_snapshot(input: GetReportSnapshotInput) -> GetReportSnapshotOutput:
+async def get_report_snapshot(account_ids: list[str] | None = None) -> GetReportSnapshotOutput:
     """Summarize account performance and persist new cache for drift tracking."""
-    result = await summarize_accounts(account_ids=input.account_ids)
+    result = await summarize_accounts(account_ids=account_ids)
     write_cache(result["new_cache"])
 
     accounts = [
@@ -96,9 +97,9 @@ async def get_report_snapshot(input: GetReportSnapshotInput) -> GetReportSnapsho
 
 
 @report_tools.tool
-async def get_drift_analysis(input: GetDriftAnalysisInput) -> GetDriftAnalysisOutput:
+async def get_drift_analysis(account_ids: list[str] | None = None) -> GetDriftAnalysisOutput:
     """Return drift items (IMPROVED/WORSENED/HOLDING) vs previous report cache."""
-    result = await summarize_accounts(account_ids=input.account_ids)
+    result = await summarize_accounts(account_ids=account_ids)
 
     items = [
         DriftItem(
@@ -119,13 +120,18 @@ async def get_drift_analysis(input: GetDriftAnalysisInput) -> GetDriftAnalysisOu
 
 
 @report_tools.tool
-async def get_action_log(input: GetActionLogInput) -> GetActionLogOutput:
+async def get_action_log(
+    date: str | None = None,
+    account: str | None = None,
+    action_type: str | None = None,
+    limit: int = 50,
+) -> GetActionLogOutput:
     """Query the SQLite action log. date format: YYYY-MM-DD (IST)."""
     rows = query_log(
-        date=input.date,
-        account=input.account,
-        action_type=input.action_type,
-        limit=input.limit,
+        date=date,
+        account=account,
+        action_type=action_type,
+        limit=limit,
     )
 
     entries = [

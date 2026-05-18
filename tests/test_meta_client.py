@@ -1,6 +1,7 @@
 """Unit tests for core/meta_client.py — all network calls mocked."""
+
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
@@ -9,6 +10,7 @@ from core.meta_client import MetaClient, TransientMetaError
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def _make_response(status_code: int, body: dict) -> httpx.Response:
     return httpx.Response(status_code=status_code, content=json.dumps(body).encode())
@@ -19,10 +21,13 @@ def _ok(body: dict) -> httpx.Response:
 
 
 def _err(code: int, msg: str, http_status: int = 400) -> httpx.Response:
-    return _make_response(http_status, {"error": {"code": code, "message": msg, "type": "GraphMethodException"}})
+    return _make_response(
+        http_status, {"error": {"code": code, "message": msg, "type": "GraphMethodException"}}
+    )
 
 
 # ── TransientMetaError detection ───────────────────────────────────────────────
+
 
 class TestIsTransient:
     def setup_method(self):
@@ -42,6 +47,7 @@ class TestIsTransient:
 
 
 # ── _parse_response ────────────────────────────────────────────────────────────
+
 
 class TestParseResponse:
     def setup_method(self):
@@ -71,6 +77,7 @@ class TestParseResponse:
 
 
 # ── GET ────────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 class TestGet:
@@ -102,14 +109,14 @@ class TestGet:
 
 # ── Paginate ──────────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 class TestPaginate:
     async def test_single_page(self):
         mock_http = AsyncMock()
-        mock_http.get = AsyncMock(return_value=_ok({
-            "data": [{"id": "1"}, {"id": "2"}],
-            "paging": {}
-        }))
+        mock_http.get = AsyncMock(
+            return_value=_ok({"data": [{"id": "1"}, {"id": "2"}], "paging": {}})
+        )
 
         client = MetaClient()
         with patch.object(client, "get_client", return_value=mock_http):
@@ -134,6 +141,7 @@ class TestPaginate:
 
 
 # ── Write ─────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 class TestWrite:
@@ -165,6 +173,7 @@ class TestWrite:
 
 # ── Batch ─────────────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 class TestPostBatch:
     async def test_batch_parses_body_strings(self):
@@ -177,10 +186,12 @@ class TestPostBatch:
 
         client = MetaClient()
         with patch.object(client, "get_client", return_value=mock_http):
-            results = await client.post_batch([
-                {"method": "GET", "relative_url": "1/insights"},
-                {"method": "GET", "relative_url": "2/insights"},
-            ])
+            results = await client.post_batch(
+                [
+                    {"method": "GET", "relative_url": "1/insights"},
+                    {"method": "GET", "relative_url": "2/insights"},
+                ]
+            )
 
         assert len(results) == 2
         assert results[0]["body"]["data"][0]["id"] == "1"
@@ -193,8 +204,10 @@ class TestPostBatch:
         requests = [{"method": "GET", "relative_url": f"{i}/insights"} for i in range(30)]
 
         client = MetaClient()
-        with patch.object(client, "get_client", return_value=mock_http), \
-             patch("asyncio.sleep", new_callable=AsyncMock):
+        with (
+            patch.object(client, "get_client", return_value=mock_http),
+            patch("asyncio.sleep", new_callable=AsyncMock),
+        ):
             results = await client.post_batch(requests)
 
         # 30 requests / 25 chunk_size = 2 POST calls

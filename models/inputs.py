@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 # ── Account tools ──────────────────────────────────────────────────────────────
 
+
 class CheckTokenInput(BaseModel):
     pass
 
@@ -13,16 +14,18 @@ class ListAdAccountsInput(BaseModel):
 
 # ── Data tools ─────────────────────────────────────────────────────────────────
 
+
 class GetDashboardSnapshotInput(BaseModel):
     account_ids: list[str] | None = None
 
 
 class GetInsightsInput(BaseModel):
     object_id: str
-    level: str = "adset"   # "campaign" or "adset"
+    level: str = "adset"  # "campaign" or "adset"
 
 
 # ── Optimiser tools ────────────────────────────────────────────────────────────
+
 
 class RunOptimiserInput(BaseModel):
     account_ids: list[str] | None = None
@@ -47,7 +50,7 @@ class ExplainDecisionInput(BaseModel):
 
 
 class SimulateBudgetChangeInput(BaseModel):
-    level: str                    # "campaign" or "adset"
+    level: str  # "campaign" or "adset"
     budget: int
     t_spend: float
     t_results: float
@@ -63,23 +66,24 @@ class SimulateBudgetChangeInput(BaseModel):
 
 # ── Write tools ────────────────────────────────────────────────────────────────
 
+
 class ApplyBudgetChangeInput(BaseModel):
     object_id: str
-    level: str                    # "campaign" or "adset"
+    level: str  # "campaign" or "adset"
     new_budget: int
     dry_run: bool = True
 
 
 class PauseObjectInput(BaseModel):
     object_id: str
-    level: str                    # "campaign" or "adset"
+    level: str  # "campaign" or "adset"
     dry_run: bool = True
 
 
 class BulkChange(BaseModel):
     object_id: str
     level: str
-    action: str                   # "SET_BUDGET" or "PAUSE"
+    action: str  # "SET_BUDGET" or "PAUSE"
     new_budget: int | None = None
 
 
@@ -89,6 +93,7 @@ class BulkApplyChangesInput(BaseModel):
 
 
 # ── Report tools ───────────────────────────────────────────────────────────────
+
 
 class GetAlertsInput(BaseModel):
     account_ids: list[str] | None = None
@@ -103,7 +108,7 @@ class GetDriftAnalysisInput(BaseModel):
 
 
 class GetActionLogInput(BaseModel):
-    date: str | None = None       # YYYY-MM-DD in IST; defaults to today
+    date: str | None = None  # YYYY-MM-DD in IST; defaults to today
     account: str | None = None
     action_type: str | None = None
     limit: int = 50
@@ -111,11 +116,12 @@ class GetActionLogInput(BaseModel):
 
 # ── Campaign tools ───────────────────────────────────────────────────────────────
 
+
 class CreateCampaignInput(BaseModel):
     account_id: str
     name: str
     objective: str = "OUTCOME_TRAFFIC"  # OUTCOME_TRAFFIC, OUTCOME_CONVERSIONS, OUTCOME_REACH, etc.
-    status: str = "PAUSED"               # PAUSED, ACTIVE
+    status: str = "PAUSED"  # PAUSED, ACTIVE
     daily_budget: int | None = None
     special_ad_categories: list[str] = []
 
@@ -144,12 +150,13 @@ class DeleteCampaignInput(BaseModel):
 
 # ── AdSet tools ────────────────────────────────────────────────────────────────
 
+
 class CreateAdSetInput(BaseModel):
     campaign_id: str
     name: str
-    daily_budget: int
+    daily_budget: int | None = None
     billing_event: str = "IMPRESSIONS"  # IMPRESSIONS, CLICKS, CONVERSIONS
-    optimization_goal: str = "LINK_CLICKS"
+    optimization_goal: str | None = None
     bid_amount: int | None = None
     status: str = "PAUSED"
     targeting: dict | None = None

@@ -5,7 +5,7 @@ from typing import Any
 from config import settings
 
 _CACHE_FILE = os.path.join(settings.data_dir, "prev_report_cache.json")
-_MAX_BYTES   = 480_000   # mirrors GAS DocumentProperties limit
+_MAX_BYTES = 480_000  # mirrors GAS DocumentProperties limit
 
 
 def read_cache() -> dict[str, Any]:

@@ -1,7 +1,7 @@
 [
   {
     "id": "23851234567890",
-    "name": "Shashank - App Install - ABO - D2",
+    "name": "Mandeep - App Install - ABO - D2",
     "account": "TestAccount",
     "account_id": "act_987654321",
     "level": "adset",
@@ -15,7 +15,7 @@
   },
   {
     "id": "23851234567891",
-    "name": "Shashank - App Install - AAA - D3+",
+    "name": "Mandeep - App Install - AAA - D3+",
     "account": "TestAccount",
     "account_id": "act_987654321",
     "level": "adset",
@@ -29,7 +29,7 @@
   },
   {
     "id": "23851234567892",
-    "name": "Shashank - Web Purchase - CBO",
+    "name": "Mandeep - Web Purchase - CBO",
     "account": "TestAccount2",
     "account_id": "act_111111111",
     "level": "campaign",

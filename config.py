@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     meta_access_token: str
     meta_api_version: str = "v21.0"
 
-    owner_filter: str = "shashank"
+    owner_filter: str = "Mandeep"
     owner_filter_enabled: bool = True
 
     floor_budget: int = 1000
@@ -25,10 +25,12 @@ class Settings(BaseSettings):
     batch_size: int = 25
     batch_sleep_ms: int = 1500
 
-    data_dir: str = "./data"
+    data_dir: str = os.path.join(BASE_DIR, "data")
     ist_tz: str = "Asia/Kolkata"
 
-    model_config = SettingsConfigDict(env_file=os.path.join(BASE_DIR, ".env"), env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(BASE_DIR, ".env"), env_file_encoding="utf-8"
+    )
 
 
 settings = Settings()

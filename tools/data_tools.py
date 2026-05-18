@@ -1,7 +1,6 @@
 from fastmcp import FastMCP
 
 from core.insights import fetch_dashboard, fetch_insights_for_object
-from models.inputs import GetDashboardSnapshotInput, GetInsightsInput
 from models.outputs import (
     DashboardRow,
     DashboardSnapshotOutput,
@@ -23,9 +22,9 @@ def _day(slot: dict) -> DayInsights:
 
 
 @data_tools.tool
-async def get_dashboard_snapshot(input: GetDashboardSnapshotInput) -> DashboardSnapshotOutput:
+async def get_dashboard_snapshot(account_ids: list[str] | None = None) -> DashboardSnapshotOutput:
     """Fetch 3-day insights snapshot for all active campaigns and ad sets across accounts."""
-    raw_rows = await fetch_dashboard(account_ids=input.account_ids)
+    raw_rows = await fetch_dashboard(account_ids=account_ids)
     rows = [
         DashboardRow(
             id=r["id"],
@@ -47,11 +46,11 @@ async def get_dashboard_snapshot(input: GetDashboardSnapshotInput) -> DashboardS
 
 
 @data_tools.tool
-async def get_insights(input: GetInsightsInput) -> InsightsOutput:
+async def get_insights(object_id: str, level: str = "adset") -> InsightsOutput:
     """Fetch 3-day insight window (today/yesterday/day-before) for a single campaign or ad set."""
-    window = await fetch_insights_for_object(input.object_id)
+    window = await fetch_insights_for_object(object_id)
     return InsightsOutput(
-        object_id=input.object_id,
+        object_id=object_id,
         today=_day(window["today"]),
         yesterday=_day(window["yesterday"]),
         day_before=_day(window["day_before"]),

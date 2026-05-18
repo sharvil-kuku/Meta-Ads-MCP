@@ -8,7 +8,13 @@ ALERT_CAC_THRESHOLD = 300
 ALERT_BUDGET_THRESHOLD = 3000
 
 TRANSIENT_META_ERROR_CODES = {1, 2, 4, 17, 32, 613}
-TRANSIENT_META_MESSAGES = ["bandwidth", "rate limit", "too many calls", "reduce the rate", "try again"]
+TRANSIENT_META_MESSAGES = [
+    "bandwidth",
+    "rate limit",
+    "too many calls",
+    "reduce the rate",
+    "try again",
+]
 
 STATUS_MAP = {
     1: "ACTIVE",

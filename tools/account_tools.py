@@ -2,14 +2,13 @@ from fastmcp import FastMCP
 
 from constants import STATUS_MAP
 from core.meta_client import meta_client
-from models.inputs import CheckTokenInput, ListAdAccountsInput
 from models.outputs import AdAccountOutput, CheckTokenOutput, ListAdAccountsOutput
 
 account_tools = FastMCP("account-tools")
 
 
 @account_tools.tool
-async def check_token(input: CheckTokenInput) -> CheckTokenOutput:
+async def check_token() -> CheckTokenOutput:
     """Validate Meta access token. Returns user id, name, and valid flag."""
     try:
         resp = await meta_client.get("me", fields=["id", "name"])
@@ -23,12 +22,12 @@ async def check_token(input: CheckTokenInput) -> CheckTokenOutput:
 
 
 @account_tools.tool
-async def list_ad_accounts(input: ListAdAccountsInput) -> ListAdAccountsOutput:
+async def list_ad_accounts(limit: int = 200) -> ListAdAccountsOutput:
     """List all accessible Meta ad accounts with status and currency."""
     try:
         params = {
             "fields": "id,account_id,name,currency,account_status",
-            "limit": input.limit,
+            "limit": limit,
         }
         accounts = await meta_client.paginate("me/adaccounts", params)
 

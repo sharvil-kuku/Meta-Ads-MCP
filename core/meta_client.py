@@ -52,24 +52,30 @@ class MetaClient:
                 error = resp.json()
                 if "error" in error:
                     err = error["error"]
+                    msg = err.get("message", "")
+                    user_msg = err.get("error_user_msg")
+                    subcode = err.get("error_subcode")
+
+                    full_msg = msg
+                    if user_msg:
+                        full_msg += f" (User Msg: {user_msg})"
+                    if subcode:
+                        full_msg += f" (Subcode: {subcode})"
+
                     if self._is_transient(err):
-                        raise TransientMetaError(err.get("message", ""), err.get("code"))
-                    raise Exception(f"{err.get('type')}: {err.get('message')}")
+                        raise TransientMetaError(full_msg, err.get("code"))
+                    raise Exception(f"{err.get('type')}: {full_msg}")
             except json.JSONDecodeError:
                 raise Exception(f"HTTP {resp.status_code}: {resp.text[:200]}")
         return resp.json()
 
     @retry(
         stop=stop_after_attempt(5),
-        wait=wait_exponential_jitter(
-            initial=2, max=30, jitter=0.5
-        ),
+        wait=wait_exponential_jitter(initial=2, max=30, jitter=0.5),
         retry=retry_if_exception_type(TransientMetaError),
         reraise=True,
     )
-    async def get(
-        self, path: str, fields: Optional[list[str]] = None
-    ) -> dict:
+    async def get(self, path: str, fields: Optional[list[str]] = None) -> dict:
         client = await self.get_client()
         params = {"access_token": settings.meta_access_token}
         if fields:
@@ -86,16 +92,14 @@ class MetaClient:
 
         return self._parse_response(resp)
 
-    async def post(
-        self, path: str, data: Optional[dict] = None
-    ) -> dict:
+    async def post(self, path: str, data: Optional[dict] = None) -> dict:
         client = await self.get_client()
         params = {"access_token": settings.meta_access_token}
         url = f"{self.base_url}/{path}"
 
         log.info("meta_api_call", method="POST", path=path)
         try:
-            resp = await client.post(url, params=params, json=data)
+            resp = await client.post(url, params=params, data=data)
         except Exception as e:
             raise TransientMetaError(str(e))
 
@@ -153,7 +157,10 @@ class MetaClient:
         for i in range(0, len(batch), chunk_size):
             chunk = batch[i : i + chunk_size]
             batch_json = json.dumps(
-                [{"method": item.get("method"), "relative_url": item.get("relative_url")} for item in chunk]
+                [
+                    {"method": item.get("method"), "relative_url": item.get("relative_url")}
+                    for item in chunk
+                ]
             )
 
             client = await self.get_client()

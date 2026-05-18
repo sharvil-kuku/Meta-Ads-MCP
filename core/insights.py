@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 from typing import Optional
 
@@ -13,12 +12,13 @@ log = structlog.get_logger()
 
 # ── Pure helpers (exact ports from script.gs) ──────────────────────────────────
 
+
 def pick_result(row: dict) -> float:
     """start_trial_mobile_app from conversions; fallback purchase from actions."""
-    for a in (row.get("conversions") or []):
+    for a in row.get("conversions") or []:
         if a.get("action_type") == "start_trial_mobile_app":
             return float(a.get("value", 0))
-    for a in (row.get("actions") or []):
+    for a in row.get("actions") or []:
         if a.get("action_type") == "purchase":
             return float(a.get("value", 0))
     return 0.0
@@ -26,10 +26,10 @@ def pick_result(row: dict) -> float:
 
 def count_install(row: dict) -> float:
     """mobile_app_install from conversions; fallback from actions."""
-    for a in (row.get("conversions") or []):
+    for a in row.get("conversions") or []:
         if a.get("action_type") == "mobile_app_install":
             return float(a.get("value", 0))
-    for a in (row.get("actions") or []):
+    for a in row.get("actions") or []:
         if a.get("action_type") == "mobile_app_install":
             return float(a.get("value", 0))
     return 0.0
@@ -37,8 +37,8 @@ def count_install(row: dict) -> float:
 
 def empty_insights() -> dict:
     return {
-        "today":      {"spend": 0.0, "installs": 0.0, "results": 0.0},
-        "yesterday":  {"spend": 0.0, "installs": 0.0, "results": 0.0},
+        "today": {"spend": 0.0, "installs": 0.0, "results": 0.0},
+        "yesterday": {"spend": 0.0, "installs": 0.0, "results": 0.0},
         "day_before": {"spend": 0.0, "installs": 0.0, "results": 0.0},
     }
 
@@ -61,15 +61,16 @@ def _date_strings(tz_str: str) -> tuple[str, str, str, str, str]:
     day_before = today - datetime.timedelta(days=2)
     fmt = "%Y-%m-%d"
     return (
-        day_before.strftime(fmt),   # since
-        today.strftime(fmt),        # until
-        today.strftime(fmt),        # today_str
-        yesterday.strftime(fmt),    # y_str
-        day_before.strftime(fmt),   # dby_str
+        day_before.strftime(fmt),  # since
+        today.strftime(fmt),  # until
+        today.strftime(fmt),  # today_str
+        yesterday.strftime(fmt),  # y_str
+        day_before.strftime(fmt),  # dby_str
     )
 
 
 # ── API fetch functions ────────────────────────────────────────────────────────
+
 
 async def fetch_campaigns(account_id: str) -> list[dict]:
     """Fetch ACTIVE+PAUSED campaigns for one account. account_id must be act_XXX format."""
@@ -96,10 +97,7 @@ async def fetch_adsets_for_campaigns(campaign_ids: list[str]) -> list[dict]:
     batch = [
         {
             "method": "GET",
-            "relative_url": (
-                f"{cid}/adsets?fields={fields}"
-                f"&filtering={status_filter}&limit=200"
-            ),
+            "relative_url": (f"{cid}/adsets?fields={fields}&filtering={status_filter}&limit=200"),
         }
         for cid in campaign_ids
     ]
@@ -168,6 +166,7 @@ async def fetch_insights_windowed(
 
 # ── Row builder ────────────────────────────────────────────────────────────────
 
+
 def build_row(
     obj_id: str,
     obj_name: str,
@@ -180,49 +179,59 @@ def build_row(
     campaign_type: str,
     insights: dict,
 ) -> dict:
-    t   = insights.get("today",      {})
-    y   = insights.get("yesterday",  {})
+    t = insights.get("today", {})
+    y = insights.get("yesterday", {})
     dby = insights.get("day_before", {})
 
-    t_spend    = float(t.get("spend",    0))
-    t_results  = float(t.get("results",  0))
+    t_spend = float(t.get("spend", 0))
+    t_results = float(t.get("results", 0))
     t_installs = float(t.get("installs", 0))
-    y_spend    = float(y.get("spend",    0))
-    y_results  = float(y.get("results",  0))
-    dby_spend  = float(dby.get("spend",   0))
-    dby_results= float(dby.get("results", 0))
+    y_spend = float(y.get("spend", 0))
+    y_results = float(y.get("results", 0))
+    dby_spend = float(dby.get("spend", 0))
+    dby_results = float(dby.get("results", 0))
 
-    t_cac  = round(t_spend / t_results)    if t_results    else None
-    t_cpi  = round(t_spend / t_installs)   if t_installs   else None
-    y_cac  = round(y_spend / y_results)    if y_results    else None
-    dby_cac= round(dby_spend / dby_results)if dby_results  else None
+    t_cac = round(t_spend / t_results) if t_results else None
+    t_cpi = round(t_spend / t_installs) if t_installs else None
+    y_cac = round(y_spend / y_results) if y_results else None
+    dby_cac = round(dby_spend / dby_results) if dby_results else None
 
     return {
-        "id":           obj_id,
-        "name":         obj_name,
-        "account":      account_name,
-        "account_id":   account_id,
-        "level":        level,
-        "status":       status,
-        "budget":       budget,
-        "type":         campaign_type,
-        "start_time":   start_time,
+        "id": obj_id,
+        "name": obj_name,
+        "account": account_name,
+        "account_id": account_id,
+        "level": level,
+        "status": status,
+        "budget": budget,
+        "type": campaign_type,
+        "start_time": start_time,
         "today": {
-            "spend": t_spend, "results": t_results,
-            "installs": t_installs, "cac": t_cac, "cpi": t_cpi,
+            "spend": t_spend,
+            "results": t_results,
+            "installs": t_installs,
+            "cac": t_cac,
+            "cpi": t_cpi,
         },
         "yesterday": {
-            "spend": y_spend, "results": y_results,
-            "installs": float(y.get("installs", 0)), "cac": y_cac, "cpi": None,
+            "spend": y_spend,
+            "results": y_results,
+            "installs": float(y.get("installs", 0)),
+            "cac": y_cac,
+            "cpi": None,
         },
         "day_before": {
-            "spend": dby_spend, "results": dby_results,
-            "installs": float(dby.get("installs", 0)), "cac": dby_cac, "cpi": None,
+            "spend": dby_spend,
+            "results": dby_results,
+            "installs": float(dby.get("installs", 0)),
+            "cac": dby_cac,
+            "cpi": None,
         },
     }
 
 
 # ── Orchestrators ──────────────────────────────────────────────────────────────
+
 
 async def fetch_dashboard(
     account_ids: list[str] | None = None,
@@ -253,48 +262,48 @@ async def fetch_dashboard(
     rows: list[dict] = []
 
     for account in account_list:
-        acct_id   = account["id"]     # act_XXX
+        acct_id = account["id"]  # act_XXX
         acct_name = account["name"]
 
-        campaigns_raw  = await fetch_campaigns(acct_id)
+        campaigns_raw = await fetch_campaigns(acct_id)
         active_campaigns = [c for c in campaigns_raw if c.get("effective_status") == "ACTIVE"]
         if not active_campaigns:
             continue
 
         campaign_ids = [c["id"] for c in active_campaigns]
-        adsets_raw   = await fetch_adsets_for_campaigns(campaign_ids)
+        adsets_raw = await fetch_adsets_for_campaigns(campaign_ids)
 
         all_object_ids: list[str] = []
         campaign_meta: dict[str, dict] = {}
-        adset_meta:    dict[str, dict] = {}
+        adset_meta: dict[str, dict] = {}
 
         # CBO campaigns
         for c in active_campaigns:
-            db_minor = int(c.get("daily_budget")    or 0)
+            db_minor = int(c.get("daily_budget") or 0)
             lb_minor = int(c.get("lifetime_budget") or 0)
-            is_cbo   = db_minor > 0 or lb_minor > 0
+            is_cbo = db_minor > 0 or lb_minor > 0
             if not is_cbo:
                 continue
             budget = (db_minor / 100) if db_minor else (lb_minor / 100)
             campaign_meta[c["id"]] = {
-                "name":       c["name"],
-                "budget":     int(budget),
+                "name": c["name"],
+                "budget": int(budget),
                 "start_time": c.get("start_time"),
-                "type":       detect_campaign_type(c["name"]),
-                "status":     c.get("effective_status", ""),
+                "type": detect_campaign_type(c["name"]),
+                "status": c.get("effective_status", ""),
             }
             all_object_ids.append(c["id"])
 
         # ABO / AAA adsets
         for a in adsets_raw:
             db_minor = int(a.get("daily_budget") or 0)
-            budget   = db_minor / 100
+            budget = db_minor / 100
             adset_meta[a["id"]] = {
-                "name":        a["name"],
-                "budget":      int(budget),
+                "name": a["name"],
+                "budget": int(budget),
                 "campaign_id": a.get("campaign_id", ""),
-                "start_time":  a.get("start_time"),
-                "status":      a.get("effective_status", ""),
+                "start_time": a.get("start_time"),
+                "status": a.get("effective_status", ""),
             }
             all_object_ids.append(a["id"])
 
@@ -307,18 +316,20 @@ async def fetch_dashboard(
         for cid, cdata in campaign_meta.items():
             if not passes_owner_filter(cdata["name"]):
                 continue
-            rows.append(build_row(
-                obj_id=cid,
-                obj_name=cdata["name"],
-                account_name=acct_name,
-                account_id=acct_id,
-                level="campaign",
-                status=cdata["status"],
-                budget=cdata["budget"],
-                start_time=cdata["start_time"],
-                campaign_type=cdata["type"],
-                insights=insights_map.get(cid, empty_insights()),
-            ))
+            rows.append(
+                build_row(
+                    obj_id=cid,
+                    obj_name=cdata["name"],
+                    account_name=acct_name,
+                    account_id=acct_id,
+                    level="campaign",
+                    status=cdata["status"],
+                    budget=cdata["budget"],
+                    start_time=cdata["start_time"],
+                    campaign_type=cdata["type"],
+                    insights=insights_map.get(cid, empty_insights()),
+                )
+            )
 
         # Build adset rows — owner filter on parent campaign name
         campaign_name_by_id: dict[str, str] = {c["id"]: c["name"] for c in active_campaigns}
@@ -326,18 +337,20 @@ async def fetch_dashboard(
             parent_name = campaign_name_by_id.get(adata["campaign_id"], "")
             if not passes_owner_filter(parent_name):
                 continue
-            rows.append(build_row(
-                obj_id=aid,
-                obj_name=adata["name"],
-                account_name=acct_name,
-                account_id=acct_id,
-                level="adset",
-                status=adata["status"],
-                budget=adata["budget"],
-                start_time=adata["start_time"],
-                campaign_type=detect_campaign_type(parent_name),
-                insights=insights_map.get(aid, empty_insights()),
-            ))
+            rows.append(
+                build_row(
+                    obj_id=aid,
+                    obj_name=adata["name"],
+                    account_name=acct_name,
+                    account_id=acct_id,
+                    level="adset",
+                    status=adata["status"],
+                    budget=adata["budget"],
+                    start_time=adata["start_time"],
+                    campaign_type=detect_campaign_type(parent_name),
+                    insights=insights_map.get(aid, empty_insights()),
+                )
+            )
 
     return rows
 

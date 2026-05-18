@@ -1,12 +1,14 @@
 import sqlite3
 import os
 from typing import Optional
-from config import settings
 
 
 def get_db_path() -> str:
-    os.makedirs(settings.data_dir, exist_ok=True)
-    return os.path.join(settings.data_dir, "action_log.db")
+    # Use absolute path anchored to THIS file's location — never relative
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.normpath(os.path.join(base_dir, "..", "data"))
+    os.makedirs(data_dir, exist_ok=True)
+    return os.path.join(data_dir, "action_log.db")
 
 
 def init_db():
@@ -87,6 +89,7 @@ def query_log(
 ) -> list[dict]:
     import datetime
     import pytz
+
     if date is None:
         ist = pytz.timezone("Asia/Kolkata")
         date = datetime.datetime.now(ist).strftime("%Y-%m-%d")
